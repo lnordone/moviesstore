@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from movies.models import Movie
 from .utils import calculate_cart_total
-from .models import Order, Item
+from .models import Order, Item, CheckoutFeedback
 from django.contrib.auth.decorators import login_required
 
 def index(request):
@@ -60,3 +60,28 @@ def purchase(request):
     template_data['title'] = 'Purchase confirmation'
     template_data['order_id'] = order.id
     return render(request, 'cart/purchase.html', {'template_data': template_data})
+
+@login_required
+def submit_feedback(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '')
+        feedback = request.POST.get('feedback', '')
+        
+        CheckoutFeedback.objects.create(
+            order=order,
+            name=name if name else None,
+            feedback=feedback
+        )
+        return redirect('cart.view_feedback')
+    
+    return redirect('cart.index')
+
+def view_feedback(request):
+    feedback_list = CheckoutFeedback.objects.all().order_by('-created_at')
+    template_data = {
+        'title': 'Checkout Feedback',
+        'feedback_list': feedback_list
+    }
+    return render(request, 'cart/feedback.html', {'template_data': template_data})
