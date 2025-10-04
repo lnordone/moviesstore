@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Movie Petitions</h2>
+    <a href="{% url 'create_petition' %}" class="btn btn-primary mb-3">Create New Petition</a>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ messages.tags}}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        {% for petition in petitions %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ petition.title }}</h5>
+                    <p class="cart-text">{{ petition.description }}</p>
+                    <p class="text-muted">Created by: {{ petition.created_by.username }}</p>
+                    <p>Votes: {{ petition.votes_count }}</p>
+                    <form action="{% url 'vote_petition' petition.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Vote</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No petitions available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
